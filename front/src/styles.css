@@ -57,14 +57,21 @@ h2 {
 /* Estilos de la cuadrícula de turnos */
 
 .turnos-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-wrap: wrap;
     justify-content: center;
+    gap: 10px;
     font-family: Verdana, Geneva, Tahoma, sans-serif;
     font-weight: 700;
     color: #ce0202;
 }
+
+.turno-item {
+    flex: 0 0 calc(12.5% - 20px); /* Calcula el ancho para que siempre haya 8 elementos por fila */
+    max-width: calc(12.5% - 10px); /* Para asegurar que no se desborde el ancho del elemento */
+}
+
+
 
 .turno-item {
     background-color: #fff;

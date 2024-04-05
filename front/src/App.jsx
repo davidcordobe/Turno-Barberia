@@ -16,6 +16,7 @@ const App = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [turnosPerPage] = useState(6); // Cantidad de turnos por página
   const [mensajeReserva, setMensajeReserva] = useState(false); // Estado para mostrar el mensaje de reserva
+  const [showLoader, setShowLoader] = useState(false); // Estado para mostrar el loader
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -33,12 +34,14 @@ const App = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setShowLoader(true); // Mostrar loader al iniciar la reserva
 
     const fechaHoraSeleccionada = moment(`${fecha}T${hora}`).toISOString();
 
     // Verificar si el turno seleccionado ya está reservado
     const turnoReservado = turnos.find(turno => moment(turno.fechaHora).toISOString() === fechaHoraSeleccionada);
     if (turnoReservado) {
+      setShowLoader(false); // Ocultar loader
       alert('El turno seleccionado ya está reservado. Por favor, elige otro turno.');
       return;
     }
@@ -50,13 +53,10 @@ const App = () => {
       setFecha('');
       setHora('08:00');
       setMensajeReserva(true); // Mostrar mensaje de reserva
-
-      // Hacer scroll al nuevo turno reservado
-      if (scrollRef.current) {
-        scrollRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-      }
     } catch (error) {
       console.error('Error al reservar el turno:', error);
+    } finally {
+      setShowLoader(false); // Ocultar loader después de completar la reserva
     }
   };
 
@@ -79,7 +79,7 @@ const App = () => {
 
   useEffect(() => {
     generarHorario();
-  }, [fecha, turnos]); 
+  }, [fecha, turnos]);
 
   const { backgroundPositionX, backgroundPositionY, moveBackground, buttonSize, increaseButtonSize } = useStore();
 
@@ -113,8 +113,9 @@ const App = () => {
             type="submit"
             style={{ width: buttonSize, height: buttonSize }}
             onClick={increaseButtonSize}
+            disabled={showLoader} // Deshabilitar botón mientras se está reservando el turno
           >
-            Reservar Turno
+            {showLoader ? 'Reservando...' : 'Reservar Turno'}
           </button>
         </form>
         {/* Mostrar mensaje de reserva */}
@@ -123,16 +124,19 @@ const App = () => {
             <p>¡El turno se reservó correctamente!</p>
           </div>
         )}
+        {/* Mostrar loader */}
+        {showLoader && <div className="loader">Cargando...</div>}
         <h2>Turnos reservados</h2>
         <ul className='turnos-container' data-aos="fade-up"
           data-aos-anchor-placement="bottom-bottom"
           data-aos-duration="2000">
-          {currentTurnos.map((turno, index) => (
+          {currentTurnos.slice(0, 8).map((turno, index) => (
             <li key={index} className='turno-item' ref={index === currentTurnos.length - 1 ? scrollRef : null}>
               {moment(turno.fechaHora).format('DD-MM-YYYY HH:mm')}
             </li>
           ))}
         </ul>
+
         {/* Paginación */}
         <div className="pagination">
           <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>Anterior</button>
